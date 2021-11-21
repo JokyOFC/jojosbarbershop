@@ -1,44 +1,18 @@
-#include <cstddef>
+//#include <cstddef>
 #include <stdio.h>
 #include <stdlib.h>
-#include <conio.h/conio.h>
-#include <locale.h>
 
-//#include <curses.h>
+#include <conio.h/conio.h> //utilizada no getche()
+#include <locale.h> //utilizada para setar o idioma das janelas e permitir o uso de ç e acentuação, além do sleep
 
 #include <iostream>
-#include <cstdio>
-
-#include <GL/glut.h>
-#include <sys/wait.h>
-#include <time.h>
-
-//include\mysq\mysql.h
-#include <mysql/mysql.h>
+#include <cstdio> //versão stdio para linux
 
 #include <unistd.h>
 
-using namespace std;
+#include <cstring>
 
-//talvez o retorno seja utilizado pelo banco de dados
-	
-void teste(){
-	printf("estou no teste");
-}
-
-/*
-int menu(){
-	int opcao;
-	printf("\nEscolha a opção desejada: \n");
-	cout << "1 - Cabelo \n2 - Barba \n3 - Combos" << endl;
-	opcao = getche();
-	return opcao;
-}
-*/
-
-
-
-int count1;
+using namespace std; //utilizada para o cout
 
 /* Idéia para armazenar os dados escolhidos
 * 1 - utilizar structs com o nome de clientes
@@ -47,47 +21,14 @@ int count1;
 * https://www.inf.pucrs.br/~pinho/LaproI/Structs/Structs.htm - link sobre structs e exemplo de structs em functions
 */
 
-
-MYSQL *con = mysql_init(NULL);
-
-int connect(){
-
-    /* Ideia para tabela unica do banco de dados
-     *
-     * Muito bem provavel vamos precisar de uma tabela de clientes com
-     * dados escolhidos pelo cliente como senha, pedido e preço.
-     *
-     *  | .._id | senha | pedido | preço |
-     *
-     * As variaveis terão respectivamentes com os seguintes parametros:
-     * (int, auto_incrementable, primary_key); (int, not_null); (char); (float);
-     *
-     * A tabela se chamará: "pedidos"
-     */
-
-    mysql_init(con);
-		if( mysql_real_connect(con, "data-lojanutri-proj-do-user-10192926-0.b.db.ondigitalocean.com", "admin", "30CR4z1ponogIUSC", "jojos", 25060, NULL, 0) )
-			{
-				printf("conectado com sucesso!\n");
-				mysql_close(con);
-			}
-		else
-			{
-				printf("Falha de conexao\n");
-				printf("Erro %d : %s\n", mysql_errno(con), mysql_error(con));
-			}
-
-            return 0;
-
-}
-
-//int connect();
-
+// Struct utilizado para criação dos pedidos dos funcionarios
 struct ficha{
-	char selecao;
-	int preco;
+	int preco; // armazena o preço do pedido
+	int preco2; // se tiver um segundo preço, ele irá somar essa variavel com o preço
 	int senha;
-
+	bool hasDouble; // varivavel para se caso tiver dois pedidos, ele será true
+	char selecao; // primeiro pedido do cliente
+	char selecao2[]; // segundo pedido do cliente
 };
 
 /*
@@ -101,9 +42,10 @@ struct ficha{
 
 */
 
-int senha;
+int senha; // variável utilizada para sistema de senha
 
-int tela_senha(){
+void tela_senha(){
+	//ultima tela do sistema para voltar para o main
 	system("@cls||clear");
 	printf("\t\t\t\t\t\t    JoJo's barbershop\n");
 	printf("\t\t\t\t\t########################################\n");
@@ -117,9 +59,8 @@ int tela_senha(){
 	printf("\t\t\t\t\t#                                      #\n");
 	printf("\t\t\t\t\t#                                      #\n");
 	printf("\t\t\t\t\t########################################\n");
-	sleep(4);
-    //Criar um file
-    //aqui será criado um file com as informações, como um "comprovante" para retirar no totem e prosseguir com atendimento com o barbeiro
+	sleep(4); //utilizado para esperar quatro segundos para ir pra próxima linha
+    
     system("@cls||clear");
     printf("\t\t\t\t\t\t    JoJo's barbershop\n");
 	printf("\t\t\t\t\t########################################\n");
@@ -134,13 +75,14 @@ int tela_senha(){
 	printf("\t\t\t\t\t#                                      #\n");
 	printf("\t\t\t\t\t########################################\n");
     sleep(3);
-    return count1 = 1;
 }
 
-void tela_espera(char pedi[], int dinh, int passw){
+void tela_espera(){
+	//penultima tela onde carregará a ultima tela (tela_senha)
 
 	//vem um if com algum comando sql, muito bem provavel terá uma variável que retornará um select e verificará se uma linha foi adicionada.. ou talvez um log
     //aqui que será totalmente concretizado o pedido no banco de dados, a partir de um insert dos valores pegos da ultima tela para assim prosseguir para proxima tela
+
 		printf("\t\t\t\t\t\t    JoJo's barbershop\n");
 		printf("\t\t\t\t\t########################################\n");
 		printf("\t\t\t\t\t#                                      #\n");
@@ -157,24 +99,34 @@ void tela_espera(char pedi[], int dinh, int passw){
         tela_senha();
 }
 
-void menu_final(char ped[], int din) {
+struct ficha pedido;
 
-    //sistema de senha basico
+void menu_final(char ped[], char ped2[], int din) {
+	// Ultima tela de seleção para o cliente
 
 	system("@cls||clear");
 	
-	int count;
+	int count_final; // Variavel utilizada para o loop posterior
 	do{
-		for(int i; i<9; i++){
+		// Loop utilizado para dar 9 espaçamentos e cemtralizar a tela
+		for(int i; i<9; i++){ 
 			printf("\n");
 		}
-        senha++;
-		int opcao;
+        senha++; // Sistema da senha, onde irá ser adicionado +1 a cada pedido
+		int opcao; // variavel para captar o input do cliente
 		printf("\t\t\t\t\t\t    JoJo's barbershop\n");
 		printf("\t\t\t\t\t########################################\n");
 		printf("\t\t\t\t\t#                                      #\n");
 		printf("\t\t\t\t\t#               senha:%d              #\n", senha);
-		printf("\t\t\t\t\t#        Serviços: %s       #\n", ped);
+
+		// condição para se caso tiver dois serviço ele irá printar o primeiro printf
+
+		if(pedido.hasDouble = true){
+			printf("\t\t\t\t\t#        Serviços: %s + %s       #\n", ped, ped2);
+		} else {
+			printf("\t\t\t\t\t#        Serviços: %s       #\n", ped);
+		}
+
 		printf("\t\t\t\t\t#                                      #\n");
 		printf("\t\t\t\t\t#               R$ %d,00               #\n", din);
 		printf("\t\t\t\t\t#                                      #\n");
@@ -182,49 +134,62 @@ void menu_final(char ped[], int din) {
 		printf("\t\t\t\t\t#       [1 - Sim]      [2 - Não]       #\n");
 		printf("\t\t\t\t\t#                                      #\n");
 		printf("\t\t\t\t\t########################################\n");
-		scanf("%d", &opcao);
+		scanf("%d", &opcao); // input do cliente
 		
 		switch(opcao){
 			case 1:
 				system("@cls||clear");
-                //caso não confirme o pedido, a senha diminuirá...
-                //senha avançado seria se utilizasse a integração com o mysql (pegaria a ultima id utilizada para ver qual seria a senha atual/próxima senha)
-                tela_espera(ped, din, senha);
-				count = 0;
+                tela_espera(); // encaminhamento para a proxima etapa
+				count_final = 0; // no final da etapa ele irá finalizar o loop para sair do procedimento
 			break;
 			
 			case 2:
-                //no sistema avançado a senha seria o id anterior + 1
-                //muito bem provavel seria considerado um inteiro de valores altos
+			    // caso não confirme o pedido, a senha diminuirá...
+                // senha avançado seria se utilizasse a integração com o mysql (pegaria a ultima id utilizada para ver qual seria a senha atual/próxima senha)
+                // no sistema avançado a senha seria o id anterior + 1
+                // muito bem provavel seria considerado um inteiro de valores altos
 				senha-=1;
                 system("@cls||clear");
+                count_final = 0;
 			break;
 			
 			default:
-                //fazer um sistema que fique esperando na tela até 15 segundos para retornar ao menu inicial
-				//seria um loop que iria adicionando +1 até que atinja o limite
+                // fazer um sistema que fique esperando na tela até 15 segundos para retornar ao menu inicial
+				// seria um loop que iria adicionando +1 até que atinja o limite
                 system("@cls||clear");
-				count = 0;
+				count_final = 0;
 		}
-	} while (count != 0);
+	} while (count_final != 0);
 	
 }
 
-void menu_escolha(char ped[], int din) {
+void menu_escolha(char ped[], char ped2[], int din) {
 	system("@cls||clear");
 	
-	int count;
+	int count_escolha;
 	do{
+
+		// Espaçamento utilizado para centralizar o menu
 		for(int i; i<9; i++){
-			printf("\n");
+			printf("\n"); 
 		}
-		//senha++;
-		int opcao;
+		
+
+		int opcao; // variavel para captar o input do cliente
 		printf("\t\t\t\t\t\t    JoJo's barbershop\n");
 		printf("\t\t\t\t\t########################################\n");
 		printf("\t\t\t\t\t#                                      #\n");
 		printf("\t\t\t\t\t#                                      #\n");
-		printf("\t\t\t\t\t#        Serviços: %s       #\n", ped);
+
+		// condição para se caso tiver dois serviço ele irá printar o primeiro printf
+
+		if(pedido.hasDouble = true){
+			printf("\t\t\t\t\t#        Serviços: %s + %s       #\n", ped, ped2);
+			din = pedido.preco + pedido.preco2;
+		} else {
+			printf("\t\t\t\t\t#        Serviços: %s       #\n", ped);
+		}
+		
 		printf("\t\t\t\t\t#                                      #\n");
 		printf("\t\t\t\t\t#               R$ %d,00               #\n", din);
 		printf("\t\t\t\t\t#                                      #\n");
@@ -232,37 +197,43 @@ void menu_escolha(char ped[], int din) {
 		printf("\t\t\t\t\t#       [1 - Sim]      [2 - Não]       #\n");
 		printf("\t\t\t\t\t#                                      #\n");
 		printf("\t\t\t\t\t########################################\n");
-		scanf("%d", &opcao);
+		scanf("%d", &opcao); // Input do cliente
 		
 		switch(opcao){
 			case 1:
 				system("@cls||clear");
-				count = 0;
+				pedido.hasDouble = true; // Se o cliente quiser fazer mais um outro pedido, ele terá dois pedidos
+				count_escolha = 0; // no final da etapa ele irá finalizar o loop para sair do procedimento
 			break;
 			
 			case 2:
 				system("@cls||clear");
-                menu_final(ped, din);
+                menu_final(ped, ped2, din); // encaminhar para o menu para confirmar o seu pedido
+                // ele automaticamente irá definir como primeiro pedido pois essa tela só encaminhará para a
+                // tela do cliente apenas para o primeiro pedido, o segundo pedido irá encaminhar para a tela final
+                pedido.hasDouble = false; 
 				//senha-1;
-				count = 0;
+				count_escolha = 0;
 			break;
 			
 			default:
-				system("@cls||clear");
-				count = 0;
+				system("@cls||clear");	
+				count_escolha = 0;
 		}
-	} while (count != 0);
+	} while (count_escolha != 0);
 	
 }
 
+struct ficha pedidos_menu;
+
 void menu_cabelo() {
 	//printf("\nentrou menu cabelo\n");
-	
-		char dis;	
+
+		//char dis;	
 		
 		system("@cls||clear");
 		
-		int count;
+		int count_cabelo;
 		do{
 			
 			printf("\n\t\t\t\t\t\t     JoJo's barbershop\t\t\n");
@@ -271,8 +242,10 @@ void menu_cabelo() {
 			printf("\t\t\t#\t\t    Escolha a opção de cabelo desejada:    \t\t#\n");
 			printf("\t\t\t#########################################################################\n");
 			//printf("\nEscolha a opção de cabelo desejada: \n");
-			printf("1 - Casual \n2 - Repicado \n3 - Cabelo 3 \n4 - Cabelo 4 \n5 - A confirmar com o barbeiro \n0 - Cancelar pedido\n");
+			printf("1 - Degradê R$10,00 \n2 - Simples R$10,00 \n3 - Navalhado R$10,00 \n4 - Pé de cabelo R$10,00 \n5 - A tratar com o barbeiro \n0 - Cancelar pedido\n");
 			scanf("%d", &opcao_cab);
+			
+			//char *corte[25];
 			
 			switch(opcao_cab){
 				
@@ -280,46 +253,113 @@ void menu_cabelo() {
 					system("@cls||clear");
 					
 					//exit(EXIT_FAILURE);
-					count = 0;
+					count_cabelo = 0;
 				break;
 			
 				case 1:
-					printf("\n corte casual selecionado! Encaminhando para a proxima tela... \n");
+					printf("\n corte Degradê selecionado!  \n");
 					sleep(3);
-					//system("@cls||clear");
-					menu_escolha((char*)"Corte casual", 20);
+					
+					// verificação para setiver dois pedidos
+					if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Corte_degradê"; //problema
+						pedidos_menu.preco = 10;
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 10);
+						//add 
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Corte_degradê"; //problema
+						//Ultimo menu
+						pedidos_menu.preco2 = 10;
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2[1], 0);
+					}
 					//menu_final('teste', 23, 001);
 					//menu_final("Corte_casual", 25, 001);
 					//system("pause");
-					count = 0;
+					count_cabelo = 0;
 				break;
 					
 				case 2:
-					printf("\n corte repicado selecionado! Encaminhando para a proxima tela... \n");
+					printf("\n corte Simples selecionado!  \n");
                     sleep(3);
-                    menu_escolha((char*)"Corte Repicado", 20);
-					system("pause");
+
+                    // verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Corte_simples"; //problema
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 10);
+						pedidos_menu.preco = 10;
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Corte_simples"; //problema
+						//Ultimo menu
+						pedidos_menu.preco2 = 10;
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 0);
+					}
+
+					count_cabelo = 0;
 				break;
 				
 				case 3:
-					printf("\n corte 3 selecionado! Encaminhando para a proxima tela... \n");
+					printf("\n corte Navalhado selecionado!  \n");
                     sleep(3);
-                    menu_escolha((char*)"Corte 3", 20);
-					system("pause");
+                    
+                    // verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Corte_navalhado"; //problema
+						pedidos_menu.preco = 10;
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 10);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Corte_navalhado"; //problema
+						pedidos_menu.preco2 = 10;
+						//Ultimo menu
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 0);
+					}
+					
+					count_cabelo = 0;
 				break;
 				
 				case 4:
-					printf("\n corte 4 selecionado! Encaminhando para a proxima tela... \n");
+					printf("\n Pé de cabelo selecionado!  \n");
                     sleep(3);
-                    menu_escolha((char*)"Corte 4", 20);
-					system("pause");
+                    
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Pé_cabelo"; //problema
+						pedidos_menu.preco = 10;
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 10);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Pé_cabelo"; //problema
+						//Ultimo menu
+						pedidos_menu.preco2 = 10;
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 0);
+					}
+					
+					count_cabelo = 0;
 				break;
 				
 				case 5:
-					printf("\n corte 5 selecionado! Encaminhando para a proxima tela... \n");
+					printf("\n A tratar com o barbeiro selecionado!\n");
                     sleep(3);
-                    menu_escolha((char*)"Corte 5", 20);
-					system("pause");
+                    
+                    // verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Barbeiro"; //problema
+						pedidos_menu.preco = 0;
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 0);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Barbeiro"; //problema
+						//Ultimo menu
+						pedidos_menu.preco2 = 0;
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 0);
+					}
+					
+					count_cabelo = 0;
 				break;
 				
 				default:
@@ -329,10 +369,10 @@ void menu_cabelo() {
                     system("@cls||clear");
 					//exit(EXIT_FAILURE);
 					//return count1 = 1;
-					count = 1;
+					count_cabelo = 1;
 			}
 		
-		} while (count != 0);
+		} while (count_cabelo != 0);
 }
 
 void menu_barba() {
@@ -341,15 +381,15 @@ void menu_barba() {
 	
 	system("@cls||clear");
 	
-	int count;
+	int count_barba;
 		do{
 			int opcao_barb;
 			printf("\n\t\t\t\t\t\t     JoJo's barbershop\t\t\n");
 			printf("\n\t\t\t#########################################################################\n");
-			printf("\t\t\t#\t\t     Escolha a opção de barba desejada:\t\t\t#\n");
+			printf("\t\t\t#\t\t     Escolha a opção de barba e bigode desejada:\t\t#\n");
 			printf("\t\t\t#########################################################################\n");
 			//printf("\nEscolha a opção de barba desejada: \n");
-			printf("1 - Barba lenhador \n2 - Barba proporcional \n3 - Barba 3 \n4 - Barba 4 \n5 - A confirmar com o barbeiro \n0 - Cancelar pedido\n");
+			printf("1 - Barba simples R$5,00 \n2 - Barba alinhada R$ 5,00 \n3 - Pigmentação R$ 5,00 \n4 - A tratar diretamente com o barbeiro \n0 - Cancelar pedido\n");
 			scanf("%d", &opcao_barb);
 			
 			switch(opcao_barb){
@@ -357,57 +397,118 @@ void menu_barba() {
 				case 0:
 					system("@cls||clear");
 					//exit(EXIT_FAILURE);
-					count = 0;
+					count_barba = 0;
 				break;
 			
+
 				case 1:
-					printf("\n Barba lenhador selecionado! \n");
-					system("pause");
+					printf("\n Barba simples selecionado! \n");
+
+					// verificação para setiver dois pedidos
+                    if (pedido.hasDouble == false) {
+						(char**)pedido.selecao == (char**)"Barba_simples";
+						pedidos_menu.preco = 5; 
+						menu_escolha((char*)pedido.selecao, (char*)"", 5);
+
+					} else {
+
+						(char**)pedido.selecao2 == (char**)"Barba_simples"; //problema
+						pedidos_menu.preco2 = 5;
+						//Ultimo menu
+						menu_final((char*)pedido.selecao, (char*)pedido.selecao2, 0);
+					}
+					
+					sleep(3);
+					count_barba = 0;
 				break;
 					
 				case 2:
-					printf("\n Barba proporcional selecionado! \n");
-					system("pause");
+					printf("\n Barba alinhada selecionado! \n");
+					
+					// verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Barba_alihada"; //problema
+						pedidos_menu.preco = 5;
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 5);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Barba_alinhada"; //problema
+						//Ultimo menu
+						pedidos_menu.preco2 = 5;
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 0);
+					}
+					
+					sleep(3);
+					count_barba = 0;
 				break;
 				
 				case 3:
-					printf("\n Barba 3 selecionado! \n");
-					system("pause");
+					printf("\n Pigmentação selecionado! \n");
+					
+					// verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Pigmentacao"; //problema
+						pedidos_menu.preco = 5;
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 5);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Pigmentacao"; //problema
+						//Ultimo menu
+						pedidos_menu.preco = 10;
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 5);
+					}
+					
+					sleep(3);
+					count_barba = 0;
 				break;
 				
 				case 4:
-					printf("\n Barba 4 selecionado! \n");
-					system("pause");
+					printf("\n A tratar diretamente com o barbeiro selecionado! \n");
+					
+					// verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Barbeiro"; //problema
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 20);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Barbeiro"; //problema
+						//Ultimo menu
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 20);
+					}
+					
+					sleep(3);
+					count_barba = 0;
 				break;
-				
-				case 5:
-					printf("\n Barba 5 selecionado! \n");
-					system("pause");
-				break;
-				
+
 				default:
 					printf("\nselecione uma opção valida\n");
+					sleep(3);
+					system("@cls||clear");
+					count_barba = 1;
 					//exit(EXIT_FAILURE);
 					//return count1 = 1;
 			}
 		
-		} while (count != 0);
+		} while (count_barba != 0);
 }
 
-void menu_combos() {
+void menu_sombrancelha() {
 	//printf("\nentrou menu combos\n");
 	
 	system("@cls||clear");
 	
-	int count;
+	int count_somb;
 		do{
 			int opcao_barb;
 			printf("\n\t\t\t\t\t\t     JoJo's barbershop\t\t\n");
 			printf("\n\t\t\t#########################################################################\n");
-			printf("\t\t\t#\t\t\tEscolha dentre os combos:\t\t\t#\n");
+			printf("\t\t\t#\t\t\tEscolha dentre as sombrancelhas:\t\t#\n");
 			printf("\t\t\t#########################################################################\n");
 			//printf("\nEscolha dentre os combos: \n");
-			printf("1 - Barba lenhador \n2 - Barba proporcional \n3 - Barba 3 \n0 - Cancelar pedido\n");
+			printf("1 - Limpeza e alinhamento R$ 5,00 \n2 - Design R$ 5,00 \n3 - Pigmentação R$ 5,00 \n0 - Cancelar pedido\n");
 			scanf("%d", &opcao_barb);
 			
 			switch(opcao_barb){
@@ -415,37 +516,80 @@ void menu_combos() {
 				case 0:
 					system("@cls||clear");
 					//exit(EXIT_FAILURE);
-					count = 0;
+					count_somb = 0;
 				break;
 				
 				case 1:
-					printf("\n Barba lenhador selecionado! \n");
-					system("pause");
+					printf("\n Limpeza e alinhamento selecionado! \n");
+					
+					// verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Limp_alin"; //problema
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 5);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Limp_alin"; //problema
+						//Ultimo menu
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 20);
+					}
+					
+					sleep(3);
+					count_somb = 0;
 				break;
 					
 				case 2:
-					printf("\n Barba proporcional selecionado! \n");
-					system("pause");
+					printf("\n Design selecionado! \n");
+					
+					// verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Design"; //problema
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 20);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Design"; //problema
+						//Ultimo menu
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 20);
+					}
+					
+					sleep(3);
+					count_somb = 0;
 				break;
 				
 				case 3:
-					printf("\n Barba 3 selecionado! \n");
-					system("pause");
+					printf("\n Pigmentação selecionado! \n");
+					
+					// verificação para setiver dois pedidos
+                    if (pedidos_menu.hasDouble == false) {
+						(char**)pedidos_menu.selecao == (char**)"Pigmentacao"; //problema
+						menu_escolha((char*)pedidos_menu.selecao, (char*)"", 20);
+
+					} else {
+
+						(char**)pedidos_menu.selecao2 == (char**)"Pigmentacao"; //problema
+						//Ultimo menu
+						menu_final((char*)pedidos_menu.selecao, (char*)pedidos_menu.selecao2, 20);
+					}
+					
+					sleep(3);
+					count_somb = 0;
 				break;
 				
 				default:
 					printf("\nselecione uma opção valida\n");
-					
-					//system("@cls||clear");
+					sleep(3);
+					system("@cls||clear");
 					//exit(EXIT_FAILURE);
 					//return count1 = 1;
 			}
 		
-		} while (count != 0);
+		} while (count_somb != 0);
 
 }
 
 void logo(){
+	//Procedimento para armazenar a logo do programa
 		printf("ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddhyyhhyyhddddddddddddddddddddddddddddddddddddddddddd\n");
 		printf("ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n");
 		printf("ddddddddddddddddddddddddddddddddddddddddddddddddddhhyyyyhhhdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\n");
@@ -477,22 +621,14 @@ void logo(){
 
 int main(){
 
-    setlocale(LC_ALL, "Portuguese");
+	int count1;
 
-    //connect();
+    setlocale(LC_ALL, "Portuguese"); 
 
-	//printf("%s \n", mysql_get_client_info());
-	
-	//system("119, 31");
+    bool count; //variavel utilizada para o segundo contador da primeira tela
 
-    //system("color 0A");
-	
-    bool count;
+	do{ // primeiro loop, loop da tela bem-vindo
 
-	do{
-
-        count = true;
-		
 		/*HANDLE hConsole;
 		hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 		
@@ -505,6 +641,14 @@ int main(){
 		printf("\t\t\t#\t\t\tSeja bem vindo a JoJo's barbershop!\t\t#\n");
 		printf("\t\t\t#########################################################################\n");
 		cout << "\t\t\t\t\tPressione qualquer tecla para continuar...\t\t" << endl;
+		
+		/*if(!dis){
+			dis = " ";
+			dis = (const char*)getche();
+		} else {
+			dis = (const char*)getche();
+		}*/
+
 		dis = getche();
 
         //count = false;
@@ -513,46 +657,58 @@ int main(){
 		
 		//SetConsoleTextAttribute(hConsole, 0007);
 		
-		do{
-			
+		do{ // segundo loop, loop de escolha do seriço
+			int opcao;
 			printf("\n\t\t\t\t\t\t     JoJo's barbershop\t\t\n");
 			printf("\n\t\t\t#########################################################################\n");
 			printf("\t\t\t#\t\t\tEscolha a opção desejada:\t\t\t#\n");
 			printf("\t\t\t#########################################################################\n");
-			
-			int opcao;
 			//printf("\nEscolha a opção desejada: \n");
-			printf("1 - Cabelo \n2 - Barba \n3 - Combos \n4 - Cancelar\n");
+			printf("1 - Cabelo \n2 - Barba e bigode \n3 - Sombrancelha \n4 - Cancelar\n");
 			scanf("%d", &opcao);
 			
 			switch(opcao){
 			
 				case 1:
 					menu_cabelo();
-					count1 = 1;
-					count = false;
+					count1 = 0;
+					count = false; // variavel utilizado para sair do segundo contador e ir para o primeiro menu
 					//system("pause");
+					//memset(&dis, 0, sizeof(dis));
 				break;
 				
 				case 2:
 					menu_barba();
 					count1 = 1;
-					count = false;
+					count = false; // variavel utilizado para sair do segundo contador e ir para o primeiro menu
 					//system("pause");
+					//memset(&dis, 0, sizeof(dis));
 				break;
 				
 				case 3:
-					menu_combos();
+					menu_sombrancelha();
 					count1 = 1;
-					count = false;
+					count = false; // variavel utilizado para sair do segundo contador e ir para o primeiro menu
 					//system("pause");
+					//memset(&dis, 0, sizeof(dis));
 				break;
 
 				case 4:
                     system("@cls||clear");
-                    count = false;
+                    count = false; // variavel utilizado para sair do segundo contador e ir para o primeiro menu
 				    count1 = 0;
+				    
+				    /*if(count == false){
+				    	printf("false");
+				    } else {
+				    	printf("true");
+				    }
+				    sleep(3);*/
+
+				    //opcao = EOF;
+				    //dis != EOF;
                     //fseek(fptr, 0, SEEK_SET);
+                    //memset(&dis, 0, sizeof(dis));
 				break;
                 
 				default:
@@ -563,15 +719,15 @@ int main(){
 			        printf("\t\t\t#########################################################################\n");
                     sleep(3);
                     system("@cls||clear");
-					count = true;
+					count = true; // Variável para continuar no segundo loop
 					count1 = 0;
 			}
 		
 		} while (count != false);
-		
+
 		//count1 = 1;
 		
-	} while (count1 != 1);
+	} while (true);
 
     	
 	//return 1;
@@ -595,7 +751,7 @@ int main(){
 * 
 * - Se faz necessário o uso de procedimentos e/ou funções no código; V
 * 
-* - Se faz necessário utilização de vetores e/ou matrizes na implementação; --? -> ["joaquim", 18, "ciencias da computação"]
+* - Se faz necessário utilização de vetores e/ou matrizes na implementação; V
 * 
-* - Conter pelo menos 01 tipo abstrato de dados na implementação (struct). --? ~> 
+* - Conter pelo menos 01 tipo abstrato de dados na implementação (struct). V 
 */
